@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فاصل ملفات البوليصات</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+        
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9ff;
+        }
+        
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f1ff;
+            transform: translateY(-2px);
+        }
+        
+        .upload-area.drag-over {
+            border-color: #764ba2;
+            background: #e8e9ff;
+            transform: scale(1.02);
+        }
+        
+        .upload-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+        
+        .upload-area p {
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .upload-area small {
+            color: #999;
+            display: block;
+        }
+        
+        #fileInput {
+            display: none;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        .file-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .file-info.show {
+            display: block;
+        }
+        
+        .file-name {
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            word-break: break-all;
+        }
+        
+        .file-size {
+            color: #999;
+            font-size: 14px;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+            font-weight: 600;
+        }
+        
+        .status.show {
+            display: block;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.loading {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(12, 84, 96, 0.3);
+            border-radius: 50%;
+            border-top-color: #0c5460;
+            animation: spin 1s linear infinite;
+            margin-left: 8px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .features {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #eee;
+        }
+        
+        .features h3 {
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .feature-list {
+            list-style: none;
+        }
+        
+        .feature-list li {
+            color: #666;
+            font-size: 13px;
+            padding: 8px 0;
+            padding-right: 25px;
+            position: relative;
+        }
+        
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            right: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">📄</div>
+            <h1>فاصل البوليصات</h1>
+            <p>حمّل ملف PDF وسيتم فصله وإعادة تسميته تلقائياً</p>
+        </div>
+        
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📤</div>
+            <p>اسحب ملف PDF هنا</p>
+            <small>أو انقر لاختيار ملف</small>
+        </div>
+        
+        <input type="file" id="fileInput" accept=".pdf">
+        
+        <div class="file-info" id="fileInfo">
+            <div class="file-name" id="fileName"></div>
+            <div class="file-size" id="fileSize"></div>
+        </div>
+        
+        <div class="button-group">
+            <button class="btn btn-primary" id="uploadBtn" disabled>معالجة الملف</button>
+            <button class="btn btn-secondary" id="clearBtn">حذف</button>
+        </div>
+        
+        <div class="status" id="status"></div>
+        
+        <div class="features">
+            <h3>المميزات:</h3>
+            <ul class="feature-list">
+                <li>استخراج أرقام البوليصات تلقائياً</li>
+                <li>فصل الملف لملفات منفصلة</li>
+                <li>إعادة تسمية حسب رقم البوليصة</li>
+                <li>ضغط جميع الملفات في ZIP واحد</li>
+                <li>تحميل الملف مباشرة</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const status = document.getElementById('status');
+        
+        let selectedFile = null;
+        
+        // Click to upload
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        // File selection
+        fileInput.addEventListener('change', handleFileSelect);
+        
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('drag-over');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('drag-over');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('drag-over');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect();
+            }
+        });
+        
+        function handleFileSelect() {
+            const file = fileInput.files[0];
+            
+            if (!file) return;
+            
+            if (file.type !== 'application/pdf') {
+                showStatus('الملف يجب أن يكون PDF', 'error');
+                return;
+            }
+            
+            selectedFile = file;
+            fileName.textContent = '📄 ' + file.name;
+            fileSize.textContent = 'الحجم: ' + (file.size / 1024 / 1024).toFixed(2) + ' MB';
+            
+            fileInfo.classList.add('show');
+            uploadBtn.disabled = false;
+            uploadBtn.textContent = 'معالجة الملف';
+            
+            status.classList.remove('show');
+        }
+        
+        // Upload and process
+        uploadBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+            
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'جاري المعالجة...';
+            showStatus('جاري معالجة الملف' + '<span class="spinner"></span>', 'loading');
+            
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'waybills.zip';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    showStatus('✓ تم معالجة الملف بنجاح! تم تنزيل الملف', 'success');
+                    clearFile();
+                } else {
+                    const error = await response.json();
+                    showStatus('❌ ' + (error.error || 'حدث خطأ في المعالجة'), 'error');
+                    uploadBtn.disabled = false;
+                    uploadBtn.textContent = 'معالجة الملف';
+                }
+            } catch (error) {
+                showStatus('❌ خطأ في الاتصال: ' + error.message, 'error');
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'معالجة الملف';
+            }
+        });
+        
+        // Clear
+        clearBtn.addEventListener('click', clearFile);
+        
+        function clearFile() {
+            selectedFile = null;
+            fileInput.value = '';
+            fileInfo.classList.remove('show');
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'معالجة الملف';
+            status.classList.remove('show');
+        }
+        
+        function showStatus(message, type) {
+            status.textContent = message;
+            status.className = 'status show ' + type;
+        }
+    </script>
+</body>
+</html>
