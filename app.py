@@ -20,7 +20,7 @@ def split_pdf_by_waybill(pdf_file):
     pdf_reader = PyPDF2.PdfReader(pdf_file)
     waybill_pages = {}
     
-    # قراءة كل صفحة واستخراج رقم البوليصة
+    # قراءة كل صفحة و��ستخراج رقم البوليصة
     for page_num in range(len(pdf_reader.pages)):
         page = pdf_reader.pages[page_num]
         text = page.extract_text()
@@ -111,4 +111,4 @@ def upload():
         return {'error': f'خطأ في معالجة الملف: {str(e)}'}, 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
