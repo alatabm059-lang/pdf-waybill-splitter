@@ -1,5 +1,8 @@
 from flask import Flask, render_template, request, send_file
 import PyPDF2
+import pytesseract
+from pdf2image import convert_from_bytes
+from PIL import Image
 import re
 import io
 import zipfile
@@ -9,21 +12,68 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB max
 
+def extract_text_from_pdf(pdf_file):
+    """استخراج النص من PDF باستخدام OCR"""
+    try:
+        # محاولة استخراج النص مباشرة
+        pdf_reader = PyPDF2.PdfReader(pdf_file)
+        full_text = ""
+        
+        for page in pdf_reader.pages:
+            full_text += page.extract_text() + "\n"
+        
+        # إذا كان النص فارغاً أو قليلاً، استخدم OCR
+        if len(full_text.strip()) < 50:
+            pdf_file.seek(0)
+            images = convert_from_bytes(pdf_file.read(), dpi=300)
+            
+            for image in images:
+                text = pytesseract.image_to_string(image, lang='ara+eng')
+                full_text += text + "\n"
+        
+        return full_text
+    except Exception as e:
+        print(f"خطأ في استخراج النص: {str(e)}")
+        return ""
+
 def extract_waybill_number(text):
     """استخراج رقم البوليصة (3 حروف + 7 أرقام)"""
+    # البحث عن النمط: ABC1234567
     pattern = r'[A-Z]{3}\d{7}'
     matches = re.findall(pattern, text)
-    return matches[0] if matches else None
+    
+    if matches:
+        return matches[0]
+    
+    # محاولة ثانية: البحث عن أرقام متتالية
+    digit_pattern = r'\d{7,}'
+    digit_matches = re.findall(digit_pattern, text)
+    
+    if digit_matches:
+        return digit_matches[0][:7]
+    
+    return None
 
 def split_pdf_by_waybill(pdf_file):
     """فصل ملف PDF حسب رقم البوليصة"""
     pdf_reader = PyPDF2.PdfReader(pdf_file)
     waybill_pages = {}
     
-    # قراءة كل صفحة و��ستخراج رقم البوليصة
+    # قراءة كل صفحة واستخراج رقم البوليصة
     for page_num in range(len(pdf_reader.pages)):
         page = pdf_reader.pages[page_num]
         text = page.extract_text()
+        
+        # إذا كان النص قليلاً، استخدم OCR
+        if len(text.strip()) < 100:
+            try:
+                pdf_file.seek(0)
+                images = convert_from_bytes(pdf_file.read(), dpi=200)
+                if page_num < len(images):
+                    image = images[page_num]
+                    text += pytesseract.image_to_string(image, lang='ara+eng')
+            except:
+                pass
         
         # استخراج رقم البوليصة
         waybill = extract_waybill_number(text)
@@ -92,7 +142,7 @@ def upload():
         waybill_pages, pdf_reader = split_pdf_by_waybill(pdf_file)
         
         if not waybill_pages:
-            return {'error': 'لم يتم العثور على أي رقم بوليصة في الملف'}, 400
+            return {'error': 'لم يتم العثور على أي رقم بوليصة في المل��'}, 400
         
         # إنشاء ملفات PDF منفصلة
         pdfs = create_pdfs_from_pages(pdf_reader, waybill_pages)
